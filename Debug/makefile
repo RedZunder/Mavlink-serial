@@ -60,8 +60,8 @@ all: main-build
 main-build: betafpv_micro.elf secondary-outputs
 
 # Tool invocations
-betafpv_micro.elf betafpv_micro.map: $(OBJS) $(USER_OBJS) C:\Users\D\Desktop\uni\SEM\ 6\THESIS\SEM\ 6\DRONES_stm32_code\STM32F756ZGTX_FLASH.ld makefile objects.list $(OPTIONAL_TOOL_DEPS)
-	arm-none-eabi-gcc -o "betafpv_micro.elf" @"objects.list" $(USER_OBJS) $(LIBS) -mcpu=cortex-m7 -T"C:\Users\D\Desktop\uni\SEM 6\THESIS\SEM 6\DRONES_stm32_code\STM32F756ZGTX_FLASH.ld" --specs=nosys.specs -Wl,-Map="betafpv_micro.map" -Wl,--gc-sections -static --specs=nano.specs -mfpu=fpv5-sp-d16 -mfloat-abi=hard -mthumb -Wl,--start-group -lc -lm -Wl,--end-group
+betafpv_micro.elf betafpv_micro.map: $(OBJS) $(USER_OBJS) C:\Users\D\Desktop\uni\SEM\ 6\THESIS\SEM\ 6\Mavlink-serial\STM32F756ZGTX_FLASH.ld makefile objects.list $(OPTIONAL_TOOL_DEPS)
+	arm-none-eabi-gcc -o "betafpv_micro.elf" @"objects.list" $(USER_OBJS) $(LIBS) -mcpu=cortex-m7 -T"C:\Users\D\Desktop\uni\SEM 6\THESIS\SEM 6\Mavlink-serial\STM32F756ZGTX_FLASH.ld" --specs=nosys.specs -Wl,-Map="betafpv_micro.map" -Wl,--gc-sections -static --specs=nano.specs -mfpu=fpv5-sp-d16 -mfloat-abi=hard -mthumb -Wl,--start-group -lc -lm -Wl,--end-group
 	@echo 'Finished building target: $@'
 	@echo ' '
 
