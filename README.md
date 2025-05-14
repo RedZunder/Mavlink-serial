@@ -8,4 +8,10 @@ The idea is to design an interface where the user can read information from and 
 Using the [Mavlink v2 library for C](https://mavlink.io/en/mavgen_c/).
 
 
+- [x] <details><summary>Basic decoding function</summary>
+  `decode_mavlink_mssg`
+</details>
 
+  - [ ] Finish decoding function
+- [ ] Basic encoding function
+  - [ ] Finish encoding function  
