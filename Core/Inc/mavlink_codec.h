@@ -19,6 +19,7 @@
 
 void decode_mavlink_mssg(const unsigned char* byte);
 
+void encode_mavlink_mssg(const unsigned char* byte);
 
 
 #endif /* INC_MAVLINK_CODEC_H_ */
