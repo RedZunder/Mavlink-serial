@@ -11,5 +11,6 @@ Using the [Mavlink v2 library for C](https://mavlink.io/en/mavgen_c/).
 - [x] <details open><summary>Basic decoding function</summary>
   `decode_mavlink_mssg` decodes [messages of type Mavlink](https://mavlink.io/en/messages/common.html)</details>
   - [ ] Finish decoding function
+- [ ] HEARTBEAT protocol 
 - [ ] Basic encoding function
   - [ ] Finish encoding function  
