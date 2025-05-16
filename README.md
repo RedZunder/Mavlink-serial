@@ -1,9 +1,13 @@
 # Mavlink-serial
-Interface in C for Mavlink based on STM32
+*----------------------------------------Control in C for Mavlink based on STM32----------------------------------------*
 
+
+# First steps
+We began by trying to get the ELRS Micro TX with a laptop, connecting it to the same local Wi-Fi network as the drone. We could successfully read information from the drone via **Mission Planner**. 
+The next step is to develop an interface between user and drone, through STM32F7.
 
 ## Concept
-The idea is to design an interface where the user can read information from and send data to a drone ([type quadrotor](https://mavlink.io/en/messages/common.html#MAV_TYPE)), using STM32 as the brains and the ELRS Micro TX as the sender/receiver module.
+The idea is to design an interface where the user can read information from and send commands to a drone ([type quadrotor](https://mavlink.io/en/messages/common.html#MAV_TYPE)), using STM32F7 as the brains and the ELRS Micro TX as the sender/receiver module. We power the MicroTX from the laptop, and connect it via UART to the STM32F7. For now, the STM32 will handle all operations. Later, we will use a Python script to send the user's input to the STM32 board.
 
 Using the [Mavlink v2 library for C](https://mavlink.io/en/mavgen_c/).
 
@@ -12,7 +16,7 @@ Using the [Mavlink v2 library for C](https://mavlink.io/en/mavgen_c/).
   `decode_mavlink_mssg` decodes [messages of type Mavlink](https://mavlink.io/en/messages/common.html)</details>
   - [ ] Finish decoding function
 - [ ] HEARTBEAT protocol 
-- [ ] Basic encoding function
+- [x] Basic command encoding function
   - [ ] Finish encoding function  
 
 
@@ -20,3 +24,21 @@ Using the [Mavlink v2 library for C](https://mavlink.io/en/mavgen_c/).
 # Heartbeat
 The `broadcast_heartbeat` function sends the HEARTBEAT message with basic information of the device. This is ensured to be called every 1 second thanks to a constant timer (TIM4) set with interrupt. 
 The `SYSTEM_ID` is 255, as [recommended by Mavlink](https://mavlink.io/en/messages/common.html#MAV_COMPONENT), and the `COMPONENT_ID` is `MAV_COMP_ID_MISSIONPLANNER(190)`.
+
+
+# [Encoding command](https://mavlink.io/en/services/command.html#MAV_CMD)
+
+We can use `COMMAND_INT` for [position related commands](https://mavlink.io/en/messages/common.html#COMMAND_INT) that need a frame `MAV_FRAME`, or `COMMAND_LONG` for other commands.
+For a test, using the function `mavlink_msg_command_long_pack` with command ID `COMMAND_LONG` and `MAV_CMD_REQUEST_MESSAGE` as the type of command, we will request `VFR_HUD(74)` information from the quadrotor.
+
+
+
+
+
+
+
+
+
+
+
+
