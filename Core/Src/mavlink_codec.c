@@ -104,6 +104,21 @@ void encode_mavlink_mssg(const unsigned char* byte)
 
 }
 
+/* @brief 	This function should send a HEARTBEAT signal
+ * 			and be called every second(1Hz)
+ *
+ *
+ */
+void broadcast_heartbeat()
+{
+
+
+}
+
+
+
+
+
 
 
 
