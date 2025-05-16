@@ -13,6 +13,7 @@ mavlink_global_position_int_t global_position;
 
 //reading variables
 int32_t health=0, mav_alt=0, mav_lat=0, power=0, param1=0, device_type=0;
+uint8_t componentID=0;
 mavlink_sys_status_t sys_status;
 mavlink_power_status_t pwr_status;
 mavlink_command_long_t command_long;
@@ -50,19 +51,19 @@ void decode_mavlink_mssg(const unsigned char* byte)
 
 			case MAVLINK_MSG_ID_GLOBAL_POSITION_INT:
 				mavlink_msg_global_position_int_decode(&msg, &global_position);
-				mav_alt=mavlink_msg_global_position_int_get_alt(&msg);
-				mav_lat=mavlink_msg_global_position_int_get_lat(&msg);
+				mav_alt=global_position.alt;
+				mav_lat=global_position.lat;
 
 			break;
 
 			case MAVLINK_MSG_ID_SYS_STATUS:
 				mavlink_msg_sys_status_decode(&msg, &sys_status);
-				health = mavlink_msg_sys_status_get_onboard_control_sensors_health(&msg);
+				health = sys_status.onboard_control_sensors_health;
 			break;
 
 			case MAVLINK_MSG_ID_POWER_STATUS:
 				mavlink_msg_power_status_decode(&msg, &pwr_status);
-				power = mavlink_msg_power_status_get_Vcc(&msg);
+				power = pwr_status.Vcc;
 			break;
 
 
@@ -112,6 +113,8 @@ void encode_mavlink_mssg(const unsigned char* byte)
 void broadcast_heartbeat()
 {
 
+	mavlink_msg_heartbeat_pack(SYSID, MAV_COMP_ID_MISSIONPLANNER,
+			&msg, MAV_TYPE_GCS,	MAV_AUTOPILOT_INVALID, 0, 0, MAV_STATE_UNINIT);
 
 }
 

@@ -8,7 +8,7 @@
 #ifndef INC_MAVLINK_CODEC_H_
 #define INC_MAVLINK_CODEC_H_
 
-
+#define SYSID 255
 #include "stdint.h"
 #include "string.h"
 #include "all/mavlink.h"
