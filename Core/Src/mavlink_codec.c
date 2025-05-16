@@ -20,7 +20,7 @@ mavlink_command_long_t command_long;
 
 uint8_t chan = MAVLINK_COMM_0;							//one data stream only
 mavlink_status_t status;								//message status
-mavlink_message_t msg;									//decoded message
+mavlink_message_t msg, cmmd;									//decoded message
 
 
 
@@ -79,43 +79,37 @@ void decode_mavlink_mssg(const unsigned char* byte)
 
 /* @brief This function will encode instructions into a Mavlink message
  *
- * @param
+ * @param conf_counter	Coutner to keep track of attempts for sending the command
  *
  **/
 
-void encode_mavlink_mssg(const unsigned char* byte)
+void encode_mavlink_mssg(uint8_t conf_counter)
 {
-	switch(1)
-	{
-		case MAVLINK_MSG_ID_COMMAND_LONG:
-		mavlink_msg_command_long_decode(&msg, &command_long);
-		switch(command_long.command)
-		{
-			case MAV_CMD_DO_SET_MODE:
-				param1=mavlink_msg_command_int_get_param1(&msg);
-				break;
-			default:break;
-		}
+	//EXAMPLE: send command to request message of VFR_HUD(74)
+	mavlink_msg_command_long_pack(SYS_ID, componentID, &cmmd, TARGET_ID,
+			componentID, MAV_CMD_REQUEST_MESSAGE, &conf_counter,
+			VFR_HUD, 0, 0, 0, 0, 0, 1);		//last '1' for target address
 
-		break;
-		default:break;
-	}
-
-
+//same as pack but with premade struct
+	//mavlink_msg_command_long_encode(system_id, component_id, msg, command_long)
 
 }
+
+
+
+
+
 
 /* @brief 	This function should send a HEARTBEAT signal
  * 			and be called every second(1Hz)
  *
- *
+ * @return 	Length of the HEARTBEAT message
  */
-void broadcast_heartbeat()
+uint16_t broadcast_heartbeat()
 {
 
-	mavlink_msg_heartbeat_pack(SYSID, MAV_COMP_ID_MISSIONPLANNER,
+	return mavlink_msg_heartbeat_pack(SYS_ID, MAV_COMP_ID_MISSIONPLANNER,
 			&msg, MAV_TYPE_GCS,	MAV_AUTOPILOT_INVALID, 0, 0, MAV_STATE_UNINIT);
-
 }
 
 

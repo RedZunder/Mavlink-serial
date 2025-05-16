@@ -170,6 +170,10 @@ int main(void)
 
   HAL_TIM_Base_Start_IT(&htim4);
 
+  uint8_t x=0;
+  encode_mavlink_mssg(x);
+
+
 	while (1)
   {
 
