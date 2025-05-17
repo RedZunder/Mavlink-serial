@@ -78,8 +78,9 @@ UART_HandleTypeDef huart3;
 
 	uint8_t byte=0x00;
 	uint32_t i=0;										//iterator
-	uint8_t buffer[7];
-	mavlink_message_t mssg, rx_msg;
+	uint8_t buffer[280];
+	mavlink_message_t mav_mssg, mav_rx_msg;
+	uint8_t rx[280];									//max size of MAVLINK V2 packet
 
 
 /* USER CODE END PV */
@@ -108,21 +109,35 @@ static void MX_TIM4_Init(void);
 
 
 
-////////
-/*
-void HAL_UARTEx_RxEventCallback(UART_HandleTypeDef *huart, uint16_t Size)
+////////	UART
+
+void HAL_UART_TxCpltCallback(UART_HandleTypeDef *huart)
 {
+	if (huart == &huart3)
+	{
+		HAL_UART_Receive_IT(&huart1, (uint8_t *)rx, 7);
 
-	HAL_UARTEx_ReceiveToIdle_IT(&huart1, (uint8_t *)rx, 6);
+	}
 
-}*/
+}
+
+
+void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
+{
+	if (huart == &huart3)
+		HAL_UART_Transmit_IT(&huart1, (uint8_t *)rx, 7);
+
+}
+
+
+////////	TIM
 
 void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 {
 	// Check which version of the timer triggered this callback and toggle LED
 	if (htim == &htim4 )
 	{
-		broadcast_heartbeat(&buffer, &mssg);
+		mavlink_establish_conversation(&huart3, &buffer, &mav_mssg);
 	}
 }
 
@@ -145,7 +160,7 @@ int main(void)
   /* MCU Configuration--------------------------------------------------------*/
 
   /* Reset of all peripherals, Initializes the Flash interface and the Systick. */
-  HAL_Init();
+   HAL_Init();
 
   /* USER CODE BEGIN Init */
 
@@ -217,7 +232,7 @@ int main(void)
 		//HAL_UART_Transmit(&huart3,(uint8_t *) 255,1,100);
 		//HAL_UART_Transmit(&huart1, (uint8_t *)rx,sizeof(rx),100);
 
-		decode_mavlink_mssg(mssgBytes[i], rx_msg);
+		decode_mavlink_mssg(mssgBytes[i], mav_rx_msg);
 
 		if(i<sizeof(mssgBytes))
 			i++;
@@ -441,7 +456,7 @@ static void MX_USART3_UART_Init(void)
 
   /* USER CODE END USART3_Init 1 */
   huart3.Instance = USART3;
-  huart3.Init.BaudRate = 115200;
+  huart3.Init.BaudRate = 57600;
   huart3.Init.WordLength = UART_WORDLENGTH_8B;
   huart3.Init.StopBits = UART_STOPBITS_1;
   huart3.Init.Parity = UART_PARITY_NONE;

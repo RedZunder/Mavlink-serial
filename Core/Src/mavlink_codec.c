@@ -8,7 +8,6 @@
  */
 #include "mavlink_codec.h"
 
-
 mavlink_global_position_int_t global_position;
 
 //reading variables
@@ -21,7 +20,7 @@ mavlink_command_long_t command_long;
 uint8_t chan = MAVLINK_COMM_0;							//one data stream only
 mavlink_status_t status;								//message status
 mavlink_message_t cmmd;									//decoded message
-
+uint16_t len=0;
 
 
 /* @brief This function decodes a Mavlink message when looping on each byte
@@ -96,15 +95,11 @@ void encode_mavlink_mssg(uint8_t conf_counter)
 }
 
 
-
-
-
-
-/* @brief 	This function sends a HEARTBEAT signal to the buffer
- * 			and should be called every second(1Hz)
+/* @brief 				This function creates a HEARTBEAT signal into the buffer
+ *
  *	@param	buffer:		uint8_t Empty array buffer
  *	@param	msg:		Empty Maavlink message struct for the message
- * 	@return 	Length of the HEARTBEAT byte message
+ * 	@return 			Length of the HEARTBEAT byte message
  */
 uint16_t broadcast_heartbeat(uint8_t* buffer, mavlink_message_t* msg)
 {
@@ -116,6 +111,21 @@ uint16_t broadcast_heartbeat(uint8_t* buffer, mavlink_message_t* msg)
 }
 
 
+
+/*	@brief  			Create and transmit the heartbeat message
+ * 						This should be called every second (1Hz)
+ *
+ *	@param 	huart:		UART  Handle
+ *	@param	buffer:		uint8_t Empty array buffer
+ *	@param	msg:		Empty Maavlink message struct for the message
+ */
+
+void mavlink_establish_conversation(UART_HandleTypeDef* huart, uint8_t* buffer, mavlink_message_t* msg)
+{
+	len=broadcast_heartbeat(buffer, msg);
+	HAL_UART_Transmit_IT(huart, buffer, len);
+
+}
 
 
 

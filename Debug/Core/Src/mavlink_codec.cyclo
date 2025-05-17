@@ -28,6 +28,7 @@ C:/Users/D/Desktop/uni/SEM 6/THESIS/SEM 6/Mavlink-serial/Mavgen/all/../ardupilot
 C:/Users/D/Desktop/uni/SEM 6/THESIS/SEM 6/Mavlink-serial/Mavgen/all/../ardupilotmega/../common/./mavlink_msg_power_status.h:305:20:mavlink_msg_power_status_decode	1
 C:/Users/D/Desktop/uni/SEM 6/THESIS/SEM 6/Mavlink-serial/Mavgen/all/../ardupilotmega/../common/../standard/../minimal/./mavlink_msg_heartbeat.h:66:24:mavlink_msg_heartbeat_pack	1
 C:/Users/D/Desktop/uni/SEM 6/THESIS/SEM 6/Mavlink-serial/Mavgen/all/../ardupilotmega/../common/../standard/../minimal/./mavlink_msg_heartbeat.h:321:23:mavlink_msg_heartbeat_get_type	1
-../Core/Src/mavlink_codec.c:34:6:decode_mavlink_mssg	8
-../Core/Src/mavlink_codec.c:86:6:encode_mavlink_mssg	1
-../Core/Src/mavlink_codec.c:109:10:broadcast_heartbeat	1
+../Core/Src/mavlink_codec.c:33:6:decode_mavlink_mssg	8
+../Core/Src/mavlink_codec.c:85:6:encode_mavlink_mssg	1
+../Core/Src/mavlink_codec.c:104:10:broadcast_heartbeat	1
+../Core/Src/mavlink_codec.c:123:6:mavlink_establish_conversation	1
