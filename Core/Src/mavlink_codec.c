@@ -21,6 +21,10 @@ uint8_t chan = MAVLINK_COMM_0;							//one data stream only
 mavlink_status_t status;								//message status
 mavlink_message_t cmmd;									//decoded message
 uint16_t len=0;
+mavlink_heartbeat_t heartbeat;
+
+
+
 
 
 /* @brief This function decodes a Mavlink message when looping on each byte
@@ -28,48 +32,43 @@ uint16_t len=0;
  *	e.g. [MAVLINK_HEARTBEAT, MAVLINK_GLOBAL_POSITION_INT, MAVLINK_SYS_STATUS]
  *
  * @param byte:		Current byte of the message to decode
- *
+ *	@return :		1 if success, 0 if message was not found
  **/
-void decode_mavlink_mssg(const unsigned char* byte, mavlink_message_t msg)
+bool decode_mavlink_mssg(const unsigned char* byte, mavlink_message_t* msg)
 {
-	if (mavlink_parse_char(chan, byte, &msg, &status))
+	if (mavlink_parse_char(chan, *byte, msg, &status))
 	{
 		// msg.msgid, msg.seq, msg.compid, msg.sysid);
-/*
-
-		HAL_UART_Transmit(&huart3, msg.msgid, 24, 100);
-		HAL_UART_Transmit(&huart3, "\n", 1, 100);*/
 
 		// ... DECODE THE MESSAGE PAYLOAD HERE ...
-		 switch(msg.msgid) {
-		 case MAVLINK_MSG_ID_HEARTBEAT:
-			 	device_type=mavlink_msg_heartbeat_get_type(&msg);
-			 break;
-
-
-
+		 switch(msg->msgid) {
 			case MAVLINK_MSG_ID_GLOBAL_POSITION_INT:
-				mavlink_msg_global_position_int_decode(&msg, &global_position);
+				mavlink_msg_global_position_int_decode(msg, &global_position);
 				mav_alt=global_position.alt;
 				mav_lat=global_position.lat;
 
 			break;
 
 			case MAVLINK_MSG_ID_SYS_STATUS:
-				mavlink_msg_sys_status_decode(&msg, &sys_status);
+				mavlink_msg_sys_status_decode(msg, &sys_status);
 				health = sys_status.onboard_control_sensors_health;
 			break;
 
 			case MAVLINK_MSG_ID_POWER_STATUS:
-				mavlink_msg_power_status_decode(&msg, &pwr_status);
+				mavlink_msg_power_status_decode(msg, &pwr_status);
 				power = pwr_status.Vcc;
 			break;
+			case MAVLINK_MSG_ID_HEARTBEAT:
+				mavlink_msg_heartbeat_decode(msg, &heartbeat);
+			 	device_type=mavlink_msg_heartbeat_get_type(msg);
 
 
 			default:
+				return 0;
 			break;
 			}
 	}
+	return 1;
 
 }
 
@@ -78,18 +77,18 @@ void decode_mavlink_mssg(const unsigned char* byte, mavlink_message_t msg)
 
 /* @brief This function will encode instructions into a Mavlink message
  *
- * @param conf_counter	Coutner to keep track of attempts for sending the command
+ * @param conf_counter	Counter to keep track of attempts for sending the command
  *
  **/
 
-void encode_mavlink_mssg(uint8_t conf_counter)
+void encode_mavlink_cmd(const uint8_t* conf_counter)
 {
 	//EXAMPLE: send command to request message of VFR_HUD(74)
 	mavlink_msg_command_long_pack(SYS_ID, componentID, &cmmd, TARGET_ID,
-			componentID, MAV_CMD_REQUEST_MESSAGE, &conf_counter,
+			componentID, MAV_CMD_REQUEST_MESSAGE, *conf_counter,
 			VFR_HUD, 0, 0, 0, 0, 0, 1);		//last '1' for target address
 
-//same as pack but with premade struct
+	//same as pack but with premade struct
 	//mavlink_msg_command_long_encode(system_id, component_id, msg, command_long)
 
 }
@@ -112,12 +111,12 @@ uint16_t broadcast_heartbeat(uint8_t* buffer, mavlink_message_t* msg)
 
 
 
-/*	@brief  			Create and transmit the heartbeat message
+/*	@brief  			Create and transmit_IT the heartbeat message
  * 						This should be called every second (1Hz)
  *
  *	@param 	huart:		UART  Handle
  *	@param	buffer:		uint8_t Empty array buffer
- *	@param	msg:		Empty Maavlink message struct for the message
+ *	@param	msg:		Empty Mavlink struct for the message
  */
 
 void mavlink_establish_conversation(UART_HandleTypeDef* huart, uint8_t* buffer, mavlink_message_t* msg)
