@@ -24,6 +24,7 @@ Using the [Mavlink v2 library for C](https://mavlink.io/en/mavgen_c/).
 # Heartbeat
 The `broadcast_heartbeat` function sends the HEARTBEAT message with basic information of the device. This is ensured to be called every 1 second thanks to a constant timer (TIM4) set with interrupt. 
 The `SYSTEM_ID` is 255, as [recommended by Mavlink](https://mavlink.io/en/messages/common.html#MAV_COMPONENT), and the `COMPONENT_ID` is `MAV_COMP_ID_MISSIONPLANNER(190)`.
+The function saves the `HEARTBEAT` information into a `mavlink_message_t` struct, and then encodes the message in bytes into the `uint8_t* buffer`.
 
 
 # [Encoding command](https://mavlink.io/en/services/command.html#MAV_CMD)
