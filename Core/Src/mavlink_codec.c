@@ -20,7 +20,7 @@ mavlink_command_long_t command_long;
 
 uint8_t chan = MAVLINK_COMM_0;							//one data stream only
 mavlink_status_t status;								//message status
-mavlink_message_t msg, cmmd;									//decoded message
+mavlink_message_t cmmd;									//decoded message
 
 
 
@@ -31,7 +31,7 @@ mavlink_message_t msg, cmmd;									//decoded message
  * @param byte:		Current byte of the message to decode
  *
  **/
-void decode_mavlink_mssg(const unsigned char* byte)
+void decode_mavlink_mssg(const unsigned char* byte, mavlink_message_t msg)
 {
 	if (mavlink_parse_char(chan, byte, &msg, &status))
 	{
@@ -100,16 +100,19 @@ void encode_mavlink_mssg(uint8_t conf_counter)
 
 
 
-/* @brief 	This function should send a HEARTBEAT signal
- * 			and be called every second(1Hz)
- *
- * @return 	Length of the HEARTBEAT message
+/* @brief 	This function sends a HEARTBEAT signal to the buffer
+ * 			and should be called every second(1Hz)
+ *	@param	buffer:		uint8_t Empty array buffer
+ *	@param	msg:		Empty Maavlink message struct for the message
+ * 	@return 	Length of the HEARTBEAT byte message
  */
-uint16_t broadcast_heartbeat()
+uint16_t broadcast_heartbeat(uint8_t* buffer, mavlink_message_t* msg)
 {
-
-	return mavlink_msg_heartbeat_pack(SYS_ID, MAV_COMP_ID_MISSIONPLANNER,
-			&msg, MAV_TYPE_GCS,	MAV_AUTOPILOT_INVALID, 0, 0, MAV_STATE_UNINIT);
+	//prepare message
+	mavlink_msg_heartbeat_pack(SYS_ID, MAV_COMP_ID_MISSIONPLANNER,
+			msg, MAV_TYPE_GCS,	MAV_AUTOPILOT_INVALID, 0, 0, MAV_STATE_UNINIT);
+	//prepare bytes
+	return mavlink_msg_to_send_buffer(buffer, msg);
 }
 
 

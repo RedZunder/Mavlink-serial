@@ -78,6 +78,9 @@ UART_HandleTypeDef huart3;
 
 	uint8_t byte=0x00;
 	uint32_t i=0;										//iterator
+	uint8_t buffer[7];
+	mavlink_message_t mssg, rx_msg;
+
 
 /* USER CODE END PV */
 
@@ -116,11 +119,11 @@ void HAL_UARTEx_RxEventCallback(UART_HandleTypeDef *huart, uint16_t Size)
 
 void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 {
-  // Check which version of the timer triggered this callback and toggle LED
-  if (htim == &htim4 )
-  {
-    broadcast_heartbeat();
-  }
+	// Check which version of the timer triggered this callback and toggle LED
+	if (htim == &htim4 )
+	{
+		broadcast_heartbeat(&buffer, &mssg);
+	}
 }
 
 
@@ -214,7 +217,7 @@ int main(void)
 		//HAL_UART_Transmit(&huart3,(uint8_t *) 255,1,100);
 		//HAL_UART_Transmit(&huart1, (uint8_t *)rx,sizeof(rx),100);
 
-		decode_mavlink_mssg(mssgBytes[i]);
+		decode_mavlink_mssg(mssgBytes[i], rx_msg);
 
 		if(i<sizeof(mssgBytes))
 			i++;
