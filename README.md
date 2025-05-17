@@ -15,14 +15,15 @@ We will use the [Mavlink v2 library for C](https://mavlink.io/en/mavgen_c/), and
 - [x] <details open><summary>Basic decoding function</summary>
   `decode_mavlink_mssg` decodes [messages of type Mavlink](https://mavlink.io/en/messages/common.html)</details>
   - [ ] Finish decoding function
-- [ ] HEARTBEAT protocol 
+  - [ ] Fix live decoding
+- [x] HEARTBEAT protocol 
 - [x] Basic command encoding function
   - [ ] Finish encoding function  
 
 
 
 # Heartbeat
-The `mavlibk_establish_conversation` function creates and transmits the HEARTBEAT message with basic information of the device. This is ensured to be called every 1 second thanks to a constant timer (TIM4) set with interrupt. 
+The `mavlink_establish_conversation` function creates and transmits the HEARTBEAT message with basic information of the device. This is ensured to be called every 1 second thanks to a constant timer (TIM4) set with interrupt. 
 The `SYSTEM_ID` is 255, as [recommended by Mavlink](https://mavlink.io/en/messages/common.html#MAV_COMPONENT), and the `COMPONENT_ID` is `MAV_COMP_ID_MISSIONPLANNER(190)`.
 The function saves the `HEARTBEAT` information into a `mavlink_message_t` struct, and then encodes the message in bytes into the `uint8_t* buffer`. Finally it's transmitted via UART in interrupt mode.
 
