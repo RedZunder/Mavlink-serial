@@ -9,7 +9,7 @@ The next step is to develop an interface between user and drone, through STM32F7
 ## Concept
 The idea is to design an interface where the user can read information from and send commands to a drone ([type quadrotor](https://mavlink.io/en/messages/common.html#MAV_TYPE)), using STM32F7 as the brains and the ELRS Micro TX as the sender/receiver module. We power the MicroTX from the laptop, and connect it via UART to the STM32F7. For now, the STM32 will handle all operations. Later, we will use a Python script to send the user's input to the STM32 board.
 
-Using the [Mavlink v2 library for C](https://mavlink.io/en/mavgen_c/).
+We will use the [Mavlink v2 library for C](https://mavlink.io/en/mavgen_c/), and its packet structure is defined [here](https://mavlink.io/en/guide/serialization.html#mavlink2_packet_format).
 
 
 - [x] <details open><summary>Basic decoding function</summary>
@@ -22,9 +22,9 @@ Using the [Mavlink v2 library for C](https://mavlink.io/en/mavgen_c/).
 
 
 # Heartbeat
-The `broadcast_heartbeat` function sends the HEARTBEAT message with basic information of the device. This is ensured to be called every 1 second thanks to a constant timer (TIM4) set with interrupt. 
+The `mavlibk_establish_conversation` function creates and transmits the HEARTBEAT message with basic information of the device. This is ensured to be called every 1 second thanks to a constant timer (TIM4) set with interrupt. 
 The `SYSTEM_ID` is 255, as [recommended by Mavlink](https://mavlink.io/en/messages/common.html#MAV_COMPONENT), and the `COMPONENT_ID` is `MAV_COMP_ID_MISSIONPLANNER(190)`.
-The function saves the `HEARTBEAT` information into a `mavlink_message_t` struct, and then encodes the message in bytes into the `uint8_t* buffer`.
+The function saves the `HEARTBEAT` information into a `mavlink_message_t` struct, and then encodes the message in bytes into the `uint8_t* buffer`. Finally it's transmitted via UART in interrupt mode.
 
 
 # [Encoding command](https://mavlink.io/en/services/command.html#MAV_CMD)
