@@ -8,21 +8,33 @@
  */
 #include "mavlink_codec.h"
 
-mavlink_global_position_int_t global_position;
 
-//reading variables
+//testing variables
 int32_t health=0, mav_alt=0, mav_lat=0, power=0, param1=0, device_type=0;
 uint8_t componentID=0;
+
+
+uint16_t len=0;
+uint8_t chan = MAVLINK_COMM_0;							//one data stream only
+mavlink_status_t status;
+
+//----------------------DECODED MESSAGES----------------------
+mavlink_global_position_int_t global_position;
 mavlink_sys_status_t sys_status;
 mavlink_power_status_t pwr_status;
+mavlink_message_t cmmd;
+mavlink_heartbeat_t hb;
+mavlink_attitude_t att;
+mavlink_command_ack_t cmd_ack;
+mavlink_battery_status_t bat_stat;
+mavlink_collision_t col;
+mavlink_autopilot_version_t	autopilot_v;
+
+
+
+//-------------------------------------------------------------
+
 mavlink_command_long_t command_long;
-
-uint8_t chan = MAVLINK_COMM_0;							//one data stream only
-mavlink_status_t status;								//message status
-mavlink_message_t cmmd;									//decoded message
-uint16_t len=0;
-mavlink_heartbeat_t heartbeat;
-
 
 
 
@@ -34,45 +46,61 @@ mavlink_heartbeat_t heartbeat;
  * @param byte:		Current byte of the message to decode
  *	@return :		1 if success, 0 if message was not found
  **/
-bool decode_mavlink_mssg(const unsigned char* byte, mavlink_message_t* msg)
+uint8_t decode_mavlink_mssg(const unsigned char* byte, mavlink_message_t* msg)
 {
 	if (mavlink_parse_char(chan, *byte, msg, &status))
 	{
-		// msg.msgid, msg.seq, msg.compid, msg.sysid);
-
 		// ... DECODE THE MESSAGE PAYLOAD HERE ...
-		 switch(msg->msgid) {
+		 switch(msg->msgid)
+		 {
 			case MAVLINK_MSG_ID_GLOBAL_POSITION_INT:
 				mavlink_msg_global_position_int_decode(msg, &global_position);
 				mav_alt=global_position.alt;
 				mav_lat=global_position.lat;
-
-			break;
+				break;
 
 			case MAVLINK_MSG_ID_SYS_STATUS:
 				mavlink_msg_sys_status_decode(msg, &sys_status);
 				health = sys_status.onboard_control_sensors_health;
-			break;
+				break;
 
 			case MAVLINK_MSG_ID_POWER_STATUS:
 				mavlink_msg_power_status_decode(msg, &pwr_status);
 				power = pwr_status.Vcc;
-			break;
+				break;
+
 			case MAVLINK_MSG_ID_HEARTBEAT:
-				mavlink_msg_heartbeat_decode(msg, &heartbeat);
+				mavlink_msg_heartbeat_decode(msg, &hb);
 			 	device_type=mavlink_msg_heartbeat_get_type(msg);
+			 	break;
 
+			case MAVLINK_MSG_ID_ATTITUDE:
+				mavlink_msg_attitude_decode(msg, &att);
+				break;
 
-			default:
-				return 0;
-			break;
+			case MAVLINK_MSG_ID_COMMAND_ACK:
+				mavlink_msg_command_ack_decode(msg, &cmd_ack);
+				break;
+
+			case MAVLINK_MSG_ID_BATTERY_STATUS:
+				mavlink_msg_battery_status_decode(msg, &bat_stat);
+				break;
+
+			case MAVLINK_MSG_ID_COLLISION:
+				mavlink_msg_collision_decode(msg, &col);
+				break;
+
+			case MAVLINK_MSG_ID_AUTOPILOT_VERSION:
+				mavlink_msg_autopilot_version_decode(msg, &autopilot_v);
+				break;
+
+			default:return 0;break;
+
 			}
 	}
 	return 1;
 
 }
-
-
 
 
 /* @brief This function will encode instructions into a Mavlink message
@@ -108,7 +136,6 @@ uint16_t broadcast_heartbeat(uint8_t* buffer, mavlink_message_t* msg)
 	//prepare bytes
 	return mavlink_msg_to_send_buffer(buffer, msg);
 }
-
 
 
 /*	@brief  			Create and transmit_IT the heartbeat message

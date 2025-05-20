@@ -159,8 +159,8 @@ static void MX_USART2_UART_Init(void);
 
 
 #if MODE==2				//Read from UART and send to terminal
-
-	void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
+//NORMAL MODE
+	/*void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
 	{
 		if(huart==&huart2)
 		{
@@ -179,6 +179,7 @@ static void MX_USART2_UART_Init(void);
 
 	}
 
+
 	void HAL_UART_TxCpltCallback(UART_HandleTypeDef *huart)
 	{
 		if(huart==&huart3)
@@ -186,6 +187,36 @@ static void MX_USART2_UART_Init(void);
 			HAL_UART_Receive_IT(&huart2, &rx_byte, 1);
 		}
 	}
+
+*/
+	//HALF DUPLEX MODE		-		Receive from module and transmit to Terminal
+
+	void HAL_UART_TxCpltCallback(UART_HandleTypeDef *huart)
+	{
+		if(huart==&huart3)			//TODO: add condition for huart2 sending to ELRS module
+		{
+			HAL_HalfDuplex_EnableReceiver(&huart2);
+			HAL_UARTEx_ReceiveToIdle_IT(&huart2, &rx_byte, 1);
+		}
+
+
+	}
+
+
+
+	//Receive in IT mode from ELRS module
+	void HAL_UARTEx_RxEventCallback(UART_HandleTypeDef *huart, uint16_t Size)
+	{
+		if(huart==&huart2)
+		{
+			decode_mavlink_mssg(&rx_byte,&rx_mssg);
+			HAL_UART_Transmit_IT(&huart3, &rx_byte, 1);
+
+		}
+
+
+	}
+
 
 
 #endif
@@ -243,7 +274,11 @@ int main(void)
 
 
 #if MODE==2
-  HAL_UART_Receive_IT(&huart2, &rx_byte, 1);
+  //HAL_UART_Receive_IT(&huart2, &rx_byte, 1);			//For normal mode
+  HAL_HalfDuplex_EnableReceiver(&huart2);
+  HAL_UARTEx_ReceiveToIdle_IT(&huart2, &rx_byte, 1);  	//for half-duplex mode
+
+
 
 #endif
 
@@ -491,7 +526,7 @@ static void MX_USART2_UART_Init(void)
 
   /* USER CODE END USART2_Init 1 */
   huart2.Instance = USART2;
-  huart2.Init.BaudRate = 57600;
+  huart2.Init.BaudRate = 921600;
   huart2.Init.WordLength = UART_WORDLENGTH_8B;
   huart2.Init.StopBits = UART_STOPBITS_1;
   huart2.Init.Parity = UART_PARITY_NONE;
@@ -500,7 +535,7 @@ static void MX_USART2_UART_Init(void)
   huart2.Init.OverSampling = UART_OVERSAMPLING_16;
   huart2.Init.OneBitSampling = UART_ONE_BIT_SAMPLE_DISABLE;
   huart2.AdvancedInit.AdvFeatureInit = UART_ADVFEATURE_NO_INIT;
-  if (HAL_UART_Init(&huart2) != HAL_OK)
+  if (HAL_HalfDuplex_Init(&huart2) != HAL_OK)
   {
     Error_Handler();
   }

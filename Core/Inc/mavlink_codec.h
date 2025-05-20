@@ -19,7 +19,7 @@
 
 
 
-bool decode_mavlink_mssg(const unsigned char* byte, mavlink_message_t* msg);
+uint8_t decode_mavlink_mssg(const unsigned char* byte, mavlink_message_t* msg);
 
 void encode_mavlink_cmd(const uint8_t* conf_counter);
 
