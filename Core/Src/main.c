@@ -75,6 +75,7 @@ TIM_HandleTypeDef htim4;
 UART_HandleTypeDef huart1;
 UART_HandleTypeDef huart2;
 UART_HandleTypeDef huart3;
+UART_HandleTypeDef huart6;
 
 /* USER CODE BEGIN PV */
 
@@ -85,6 +86,8 @@ UART_HandleTypeDef huart3;
 	uint32_t i=0;							//iterator
 	uint8_t buffer[280];					//max size of MAVLINK V2 packet
 	mavlink_message_t mav_mssg, mav_rx_msg;
+	uint8_t echo_data[64];
+	uint8_t bt=0;
 
 
 #if MODE==2
@@ -92,14 +95,12 @@ UART_HandleTypeDef huart3;
 	char bins[300]={0};
 	uint16_t count=0;						//iterator
 
-	uint8_t rx_byte=0x00;
-	mavlink_message_t rx_mssg;
+	mavlink_message_t rx_mssg;		//decoded message
+	uint8_t n=1;					//for UART half duplex
+	uint8_t rx_byte=0x00;			//receiving bytes
 #endif
 
 
-#if MODE==0
-	uint8_t echo_data[64];
-#endif
 
 
 
@@ -115,6 +116,7 @@ static void MX_USART3_UART_Init(void);
 static void MX_USART1_UART_Init(void);
 static void MX_TIM4_Init(void);
 static void MX_USART2_UART_Init(void);
+static void MX_USART6_UART_Init(void);
 /* USER CODE BEGIN PFP */
 
 
@@ -131,14 +133,21 @@ static void MX_USART2_UART_Init(void);
 
 	void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
 	{
-		if(huart==&huart3)
-		HAL_UART_Transmit_IT(&huart3, *echo_data, sizeof(echo_data));
+		if(huart==&huart6)
+		{
+			//decode_mavlink_mssg(&bt, &mav_rx_msg);
+			HAL_GPIO_TogglePin(LD1_GPIO_Port, LD1_Pin);
+			//HAL_UART_Transmit_IT(&huart6, &bt, 1);
+			HAL_UART_Transmit_IT(&huart3, &bt, 1);
+		}
+
+
 	}
 
 	void HAL_UART_TxCpltCallback(UART_HandleTypeDef *huart)
 	{
-		if(huart==&huart3)
-		HAL_UART_Receive_IT(&huart3, *echo_data, sizeof(echo_data));
+		HAL_UART_Receive_IT(&huart6, &bt, 1);
+
 	}
 
 
@@ -150,7 +159,7 @@ static void MX_USART2_UART_Init(void);
 		//send heartbeat when the 1 Hz timer is triggered
 		if (htim == &htim4 )
 		{
-			mavlink_establish_conversation(&huart3, &buffer, &mav_mssg);
+			//mavlink_establish_conversation(&huart3, &buffer, &mav_mssg);
 		}
 
 	}
@@ -158,70 +167,31 @@ static void MX_USART2_UART_Init(void);
 
 
 
-#if MODE==2				//Read from UART and send to terminal
-//NORMAL MODE
-	/*void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
-	{
-		if(huart==&huart2)
-		{
-			decode_mavlink_mssg(&rx_byte,&rx_mssg);
-
-			//show on terminal (HUART3)
-			HAL_UART_Transmit_IT(&huart3, &rx_byte, 1);
-
-			//save to array
-			if(count<300)
-			{
-				bins[count]=rx_byte;
-				count++;
-			}
-		}
-
-	}
-
-
-	void HAL_UART_TxCpltCallback(UART_HandleTypeDef *huart)
-	{
-		if(huart==&huart3)
-		{
-			HAL_UART_Receive_IT(&huart2, &rx_byte, 1);
-		}
-	}
-
-*/
-	//HALF DUPLEX MODE		-		Receive from module and transmit to Terminal
-
-	void HAL_UART_TxCpltCallback(UART_HandleTypeDef *huart)
-	{
-		if(huart==&huart3)			//TODO: add condition for huart2 sending to ELRS module
-		{
-			HAL_HalfDuplex_EnableReceiver(&huart2);
-			HAL_UARTEx_ReceiveToIdle_IT(&huart2, &rx_byte, 1);
-		}
-
-
-	}
-
-
-
-	//Receive in IT mode from ELRS module
+#if MODE==2	//Read from UART live and send to terminal
 	void HAL_UARTEx_RxEventCallback(UART_HandleTypeDef *huart, uint16_t Size)
 	{
+		//RECEIVE AND PRINT TO TERMINAL
 		if(huart==&huart2)
 		{
-			decode_mavlink_mssg(&rx_byte,&rx_mssg);
 			HAL_UART_Transmit_IT(&huart3, &rx_byte, 1);
-
 		}
 
+	}
 
+	void HAL_UART_TxCpltCallback(UART_HandleTypeDef *huart)
+	{
+
+		if(huart==&huart3)
+		{
+			HAL_GPIO_TogglePin(LD1_GPIO_Port, LD1_Pin);				//DEBUG LIGHT
+			HAL_UARTEx_ReceiveToIdle_IT(&huart2, &rx_byte, 1);		//KEEP READING
+
+		}
 	}
 
 
 
 #endif
-
-
 
 
 
@@ -261,6 +231,7 @@ int main(void)
   MX_USART1_UART_Init();
   MX_TIM4_Init();
   MX_USART2_UART_Init();
+  MX_USART6_UART_Init();
   /* USER CODE BEGIN 2 */
 
   /* USER CODE END 2 */
@@ -270,11 +241,16 @@ int main(void)
 
 #if MODE==1
   HAL_TIM_Base_Start_IT(&htim4);
+  //HAL_UART_Receive_IT(&huart3, &bt, 1);
+  HAL_UART_Receive_IT(&huart6, &bt, 1);
+
 #endif
 
 
 #if MODE==2
   //HAL_UART_Receive_IT(&huart2, &rx_byte, 1);			//For normal mode
+
+  HAL_HalfDuplex_Init(&huart2);
   HAL_HalfDuplex_EnableReceiver(&huart2);
   HAL_UARTEx_ReceiveToIdle_IT(&huart2, &rx_byte, 1);  	//for half-duplex mode
 
@@ -284,10 +260,14 @@ int main(void)
 
 
 
-  uint8_t x=0;
-  encode_mavlink_cmd(&x);
+  //uint8_t x=0;
+  //encode_mavlink_cmd(&x);
 
-
+#if MODE==2
+  HAL_HalfDuplex_Init(&huart2);
+  HAL_HalfDuplex_EnableReceiver(&huart2);
+  HAL_UARTEx_ReceiveToIdle_IT(&huart2, &rx_byte, 1);
+#endif
 
   while (1)
   {
@@ -296,14 +276,10 @@ int main(void)
 			HAL_UART_Receive(&huart3, *receive, 1, 100);
 		#endif
 
-		#if MODE==1
-			decode_mavlink_mssg(mssgBytes[i], mav_rx_msg);
 
-			if(i<sizeof(mssgBytes))
-			i++;
 
-		#endif
 
+//		decode_mavlink_mssg(&bt, &mav_rx_msg);
 
 
 
@@ -526,7 +502,7 @@ static void MX_USART2_UART_Init(void)
 
   /* USER CODE END USART2_Init 1 */
   huart2.Instance = USART2;
-  huart2.Init.BaudRate = 921600;
+  huart2.Init.BaudRate = 9600;
   huart2.Init.WordLength = UART_WORDLENGTH_8B;
   huart2.Init.StopBits = UART_STOPBITS_1;
   huart2.Init.Parity = UART_PARITY_NONE;
@@ -561,7 +537,7 @@ static void MX_USART3_UART_Init(void)
 
   /* USER CODE END USART3_Init 1 */
   huart3.Instance = USART3;
-  huart3.Init.BaudRate = 57600;
+  huart3.Init.BaudRate = 9600;
   huart3.Init.WordLength = UART_WORDLENGTH_8B;
   huart3.Init.StopBits = UART_STOPBITS_1;
   huart3.Init.Parity = UART_PARITY_NONE;
@@ -577,6 +553,41 @@ static void MX_USART3_UART_Init(void)
   /* USER CODE BEGIN USART3_Init 2 */
 
   /* USER CODE END USART3_Init 2 */
+
+}
+
+/**
+  * @brief USART6 Initialization Function
+  * @param None
+  * @retval None
+  */
+static void MX_USART6_UART_Init(void)
+{
+
+  /* USER CODE BEGIN USART6_Init 0 */
+
+  /* USER CODE END USART6_Init 0 */
+
+  /* USER CODE BEGIN USART6_Init 1 */
+
+  /* USER CODE END USART6_Init 1 */
+  huart6.Instance = USART6;
+  huart6.Init.BaudRate = 9600;
+  huart6.Init.WordLength = UART_WORDLENGTH_8B;
+  huart6.Init.StopBits = UART_STOPBITS_1;
+  huart6.Init.Parity = UART_PARITY_NONE;
+  huart6.Init.Mode = UART_MODE_TX_RX;
+  huart6.Init.HwFlowCtl = UART_HWCONTROL_NONE;
+  huart6.Init.OverSampling = UART_OVERSAMPLING_16;
+  huart6.Init.OneBitSampling = UART_ONE_BIT_SAMPLE_DISABLE;
+  huart6.AdvancedInit.AdvFeatureInit = UART_ADVFEATURE_NO_INIT;
+  if (HAL_UART_Init(&huart6) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  /* USER CODE BEGIN USART6_Init 2 */
+
+  /* USER CODE END USART6_Init 2 */
 
 }
 
