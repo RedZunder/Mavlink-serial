@@ -19,10 +19,12 @@ We will use the [Mavlink v2 library for C](https://mavlink.io/en/mavgen_c/), and
 - [x] Basic decoding function
   - [x] `decode_mavlink_mssg` decodes [messages of type Mavlink](https://mavlink.io/en/messages/common.html)</details>
   - [ ] Finish decoding function
-  - [ ] Fix live decoding (Half-duplex)
+  - [x] Fix live decoding (Half-duplex)
 - [x] HEARTBEAT protocol 
 - [x] Basic command encoding function
-  - [ ] Finish encoding function  
+  - [ ] Finish encoding function
+    - [ ] Take as a parameter the ID of desired command 
+  - [ ] Do live encoding
 
 
 
@@ -55,7 +57,7 @@ Currently the [possible messages](https://mavlink.io/en/messages/common.html) ar
 </details>
 
 ## [Encoding command](https://mavlink.io/en/services/command.html#MAV_CMD)
-
+This function takes a `mavlink_message_t` pointer and encodes a given command into the structure, ready to be sent by UART, and returns the length in bytes of this message.
 We can use `COMMAND_INT` for [position related commands](https://mavlink.io/en/messages/common.html#COMMAND_INT) that need a frame `MAV_FRAME`, or `COMMAND_LONG` for other commands.
 For a test, using the function `mavlink_msg_command_long_pack` with command ID `COMMAND_LONG` and `MAV_CMD_REQUEST_MESSAGE` as the type of command, we will request `VFR_HUD(74)` information from the quadrotor.
 
