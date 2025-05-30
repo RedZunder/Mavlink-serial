@@ -173,6 +173,7 @@ static void MX_USART6_UART_Init(void);
 		//RECEIVE AND PRINT TO TERMINAL
 		if(huart==&huart2)
 		{
+			decode_mavlink_mssg(&rx_byte, &rx_mssg);
 			HAL_UART_Transmit_IT(&huart3, &rx_byte, 1);
 		}
 
