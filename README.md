@@ -32,7 +32,9 @@ The `SYSTEM_ID` is 255, as [recommended by Mavlink](https://mavlink.io/en/messag
 The function saves the `HEARTBEAT` information into a `mavlink_message_t` struct, and then encodes the message in bytes into the `uint8_t* buffer`. Finally it's transmitted via UART in interrupt mode.
 
 ## Decoding messages
-The `decode_mavlink_mssg` will be called inside a loop, taking every byte from a live transmission and translate it to a mavlink message structure. 
+The `decode_mavlink_mssg` is called inside a loop, taking every byte from a live transmission and translate it to a mavlink message structure. To receive the byte, we use USART2 in half-duplex mode (pin PD5) and first, simulating with an Arduino UNO and [SingleWireSerial](https://github.com/felias-fogg/SingleWireSerial?tab=readme-ov-file) library the stream of bytes.
+
+
 
 Currently the [possible messages](https://mavlink.io/en/messages/common.html) are **(*IN PROGRESS*)**:
 
