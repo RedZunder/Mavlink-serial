@@ -32,8 +32,8 @@ The `SYSTEM_ID` is 255, as [recommended by Mavlink](https://mavlink.io/en/messag
 The function saves the `HEARTBEAT` information into a `mavlink_message_t` struct, and then encodes the message in bytes into the `uint8_t* buffer`. Finally it's transmitted via UART in interrupt mode.
 
 ## Decoding messages
-The `decode_mavlink_mssg` is called inside the receive interrupt callback, taking every byte from a live transmission and translating it to a Mavlink message structure. To receive the byte, we use USART2 in half-duplex mode (pin PD5). First, I use an Arduino UNO and the [SingleWireSerial](https://github.com/felias-fogg/SingleWireSerial?tab=readme-ov-file) library to simulate the stream of bytes (taken from a Wireshark capture). This succesfully decodes the message as the bytes arrive.
-
+The `decode_mavlink_mssg` is called inside the receive interrupt callback, taking every byte from a live transmission and translating it to a Mavlink message structure. To receive the byte, we use USART2 in half-duplex mode (pin PD5). First, I use an Arduino UNO (at a BAUD of 9600) and the [SingleWireSerial](https://github.com/felias-fogg/SingleWireSerial?tab=readme-ov-file) library to simulate the stream of bytes (taken from a Wireshark capture). This succesfully decodes the message as the bytes arrive.
+When connecting to the TX module and turning it on while connected to the STM32 board, we see `F1 E5 00 00`, showing a working half-duplex communication between the module and the board.
 
 
 Currently the [possible messages](https://mavlink.io/en/messages/common.html) are **(*IN PROGRESS*)**:
@@ -50,6 +50,8 @@ Currently the [possible messages](https://mavlink.io/en/messages/common.html) ar
 - MAVLINK_MSG_ID_HEARTBEAT
 - MAVLINK_MSG_ID_BATTERY_STATUS
 - MAVLINK_MSG_ID_COLLISION
+- MAVLINK_MSG_ID_OBSTACLE_DISTANCE
+- MAVLINK_MSG_ID_VFR_HUD
 </details>
 
 ## [Encoding command](https://mavlink.io/en/services/command.html#MAV_CMD)
