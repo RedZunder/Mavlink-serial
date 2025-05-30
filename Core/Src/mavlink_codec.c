@@ -29,8 +29,8 @@ mavlink_command_ack_t cmd_ack;
 mavlink_battery_status_t bat_stat;
 mavlink_collision_t col;
 mavlink_autopilot_version_t	autopilot_v;
-
-
+mavlink_obstacle_distance_t obstacle_distance;
+mavlink_vfr_hud_t vfr_hud;
 
 //-------------------------------------------------------------
 
@@ -93,7 +93,11 @@ uint8_t decode_mavlink_mssg(const unsigned char* byte, mavlink_message_t* msg)
 			case MAVLINK_MSG_ID_AUTOPILOT_VERSION:
 				mavlink_msg_autopilot_version_decode(msg, &autopilot_v);
 				break;
-
+			case MAVLINK_MSG_ID_OBSTACLE_DISTANCE:
+				mavlink_msg_obstacle_distance_decode(msg, &obstacle_distance);
+				break;
+			case MAVLINK_MSG_ID_VFR_HUD:
+				mavlink_msg_vfr_hud_decode(msg, &vfr_hud);
 			default:return 0;break;
 
 			}
@@ -106,18 +110,21 @@ uint8_t decode_mavlink_mssg(const unsigned char* byte, mavlink_message_t* msg)
 /* @brief This function will encode instructions into a Mavlink message
  *
  * @param conf_counter	Counter to keep track of attempts for sending the command
+ * @param cmmd			Message struct to encode the message into
  *
+ * @return 				Length of the encoded command structure
  **/
 
-void encode_mavlink_cmd(const uint8_t* conf_counter)
+uint16_t encode_mavlink_cmd(const uint8_t* conf_counter, mavlink_message_t* cmmd)
 {
 	//EXAMPLE: send command to request message of VFR_HUD(74)
-	mavlink_msg_command_long_pack(SYS_ID, componentID, &cmmd, TARGET_ID,
+	return	mavlink_msg_command_long_pack(SYS_ID, componentID, cmmd, TARGET_ID,
 			componentID, MAV_CMD_REQUEST_MESSAGE, *conf_counter,
-			VFR_HUD, 0, 0, 0, 0, 0, 1);		//last '1' for target address
+			VFR_HUD, 0, 0, 0, 0, 0, 1);				//last '1' for target address
 
+	//OR
 	//same as pack but with premade struct
-	//mavlink_msg_command_long_encode(system_id, component_id, msg, command_long)
+	//mavlink_msg_command_long_encode(system_id, component_id, msg, *command_long);
 
 }
 

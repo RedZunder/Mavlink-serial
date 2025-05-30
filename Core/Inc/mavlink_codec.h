@@ -21,7 +21,7 @@
 
 uint8_t decode_mavlink_mssg(const unsigned char* byte, mavlink_message_t* msg);
 
-void encode_mavlink_cmd(const uint8_t* conf_counter);
+uint16_t encode_mavlink_cmd(const uint8_t* conf_counter, mavlink_message_t* cmmd);
 
 uint16_t broadcast_heartbeat(uint8_t* buffer, mavlink_message_t* msg);
 
