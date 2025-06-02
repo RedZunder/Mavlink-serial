@@ -85,7 +85,7 @@ UART_HandleTypeDef huart6;
 	unsigned char cmdBytes[] = {0xfd, 0x20, 0x0, 0x0, 0x5a, 0xff, 0xbe, 0x4c, 0x0, 0x0, 0x0, 0x0, 0x0, 0x43, 0x0, 0x0, 0x80, 0x3f, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0xb0, 0x0, 0x1, 0x1, 0xff, 0x99};
 
 	uint32_t i=0;							//iterator
-	uint8_t buffer[280];					//max size of MAVLINK V2 packet
+	uint8_t buffer[280];
 	mavlink_message_t mav_mssg, mav_rx_msg;
 	uint8_t echo_data[64];
 	uint8_t bt=0;
@@ -99,6 +99,9 @@ UART_HandleTypeDef huart6;
 	mavlink_message_t rx_mssg;		//decoded message
 	uint8_t n=1;					//for UART half duplex
 	uint8_t rx_byte=0x00;			//receiving bytes
+	uint8_t hb_buffer[280];			//buffer for HEARTBEAT - 280 is max package size
+	uint16_t len=0;					//length of HEARTBEAT
+
 #endif
 
 
@@ -168,7 +171,9 @@ static void MX_USART6_UART_Init(void);
 
 
 
-#if MODE==2	//Read from UART live and send to terminal
+#if MODE==2		//---------Read from UART live and send to terminal
+
+
 	void HAL_UARTEx_RxEventCallback(UART_HandleTypeDef *huart, uint16_t Size)
 	{
 		//RECEIVE AND PRINT TO TERMINAL
@@ -191,6 +196,20 @@ static void MX_USART6_UART_Init(void);
 		}
 	}
 
+
+	void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
+		{
+			//send HEARTBEAT every 1Hz
+			if (htim==&htim4)
+			{
+				HAL_HalfDuplex_EnableTransmitter(&huart2);
+				len=mavlink_heartbeat(hb_buffer);
+				HAL_UART_Transmit_IT(&huart2, hb_buffer, len);
+				HAL_HalfDuplex_EnableReceiver(&huart2);
+
+			}
+
+		}
 
 
 #endif

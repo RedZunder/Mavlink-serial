@@ -12,10 +12,10 @@
 //testing variables
 int32_t health=0, mav_alt=0, mav_lat=0, power=0, param1=0, device_type=0;
 uint8_t componentID=0;
+mavlink_message_t hb_mssg;							//message struct for HEARTBEAT
 
 
-uint16_t len=0;
-uint8_t chan = MAVLINK_COMM_0;							//one data stream only
+uint8_t chan = MAVLINK_COMM_0;						//one data stream only
 mavlink_status_t status;
 
 //----------------------DECODED MESSAGES----------------------
@@ -32,7 +32,7 @@ mavlink_autopilot_version_t	autopilot_v;
 mavlink_obstacle_distance_t obstacle_distance;
 mavlink_vfr_hud_t vfr_hud;
 
-//-------------------------------------------------------------
+//-------------------------COMMANDS----------------------
 
 mavlink_command_long_t command_long;
 
@@ -129,36 +129,21 @@ uint16_t encode_mavlink_cmd(const uint8_t* conf_counter, mavlink_message_t* cmmd
 }
 
 
-/* @brief 				This function creates a HEARTBEAT signal into the buffer
+/* @brief 				This function packs a HEARTBEAT signal into the buffer
  *
- *	@param	buffer:		uint8_t Empty array buffer
- *	@param	msg:		Empty Maavlink message struct for the message
- * 	@return 			Length of the HEARTBEAT byte message
+ *	@param	buffer:		Empty array buffer
+ * 	@return 			Length of the HEARTBEAT message in bytes
  */
-uint16_t broadcast_heartbeat(uint8_t* buffer, mavlink_message_t* msg)
+uint16_t mavlink_heartbeat(uint8_t* buffer)
 {
 	//prepare message
 	mavlink_msg_heartbeat_pack(SYS_ID, MAV_COMP_ID_MISSIONPLANNER,
-			msg, MAV_TYPE_GCS,	MAV_AUTOPILOT_INVALID, 0, 0, MAV_STATE_UNINIT);
-	//prepare bytes
-	return mavlink_msg_to_send_buffer(buffer, msg);
+			&hb_mssg, MAV_TYPE_GCS,	MAV_AUTOPILOT_INVALID, 0, 0, MAV_STATE_UNINIT);
+
+	//translate into bytes
+	return mavlink_msg_to_send_buffer(buffer, &hb_mssg);
 }
 
-
-/*	@brief  			Create and transmit_IT the heartbeat message
- * 						This should be called every second (1Hz)
- *
- *	@param 	huart:		UART  Handle
- *	@param	buffer:		uint8_t Empty array buffer
- *	@param	msg:		Empty Mavlink struct for the message
- */
-
-void mavlink_establish_conversation(UART_HandleTypeDef* huart, uint8_t* buffer, mavlink_message_t* msg)
-{
-	len=broadcast_heartbeat(buffer, msg);
-	HAL_UART_Transmit_IT(huart, buffer, len);
-
-}
 
 
 
