@@ -104,7 +104,12 @@ UART_HandleTypeDef huart6;
 
 #endif
 
-
+#if MODE==3
+	mavlink_message_t cmd_msg;
+	uint8_t counter;
+	uint8_t cmd_buffer[280];
+	uint16_t cmd_len;
+#endif
 
 
 
@@ -214,6 +219,16 @@ static void MX_USART6_UART_Init(void);
 
 #endif
 
+#if MODE==3
+
+
+
+
+
+#endif
+
+
+
 
 
 /* USER CODE END 0 */
@@ -293,18 +308,24 @@ int main(void)
 		#endif
 
 
-
-
-//		decode_mavlink_mssg(&bt, &mav_rx_msg);
-
-
+		#if MODE==3
+		if(HAL_GPIO_ReadPin(USER_Btn_GPIO_Port, USER_Btn_Pin)==GPIO_PIN_SET)
+		{
+			//sample command
+			cmd_len=encode_mavlink_cmd(&counter, &cmd_msg, MAV_CMD_REQUEST_MESSAGE,
+								MAVLINK_MSG_ID_VFR_HUD);
+			//pack the message into bytes
+			mavlink_msg_to_send_buffer(cmd_buffer, &cmd_msg);
+			//transmit them bytes
+			HAL_UART_Transmit_IT(&huart2, cmd_buffer, cmd_len);
+		}
+		#endif
 
 
 		HAL_Delay(10);
 
 		/*HAL_UART_Receive(&huart2, &rx_byte, 1, 100);
 		decode_mavlink_mssg(&rx_byte,&rx_mssg);*/
-
 
 
 

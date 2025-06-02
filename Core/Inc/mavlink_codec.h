@@ -10,7 +10,7 @@
 
 #define SYS_ID 255		//GSC ID
 #define TARGET_ID 1		//quadrotor ID
-#define VFR_HUD 74		//message ID for HUD metrics
+
 #include "stdint.h"
 #include "string.h"
 #include "all/mavlink.h"
@@ -21,7 +21,8 @@
 
 uint8_t decode_mavlink_mssg(const unsigned char* byte, mavlink_message_t* msg);
 
-uint16_t encode_mavlink_cmd(const uint8_t* conf_counter, mavlink_message_t* cmmd);
+uint16_t encode_mavlink_cmd(const uint8_t* conf_counter,
+		mavlink_message_t* cmmd, uint16_t cmd_id, uint16_t rqst_id);
 
 uint16_t mavlink_heartbeat(uint8_t* buffer);
 

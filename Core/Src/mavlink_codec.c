@@ -10,7 +10,7 @@
 
 
 //testing variables
-int32_t health=0, mav_alt=0, mav_lat=0, power=0, param1=0, device_type=0;
+int32_t param1=0, device_type=0;
 uint8_t componentID=0;
 mavlink_message_t hb_mssg;							//message struct for HEARTBEAT
 
@@ -44,7 +44,7 @@ mavlink_command_long_t command_long;
  *	e.g. [MAVLINK_HEARTBEAT, MAVLINK_GLOBAL_POSITION_INT, MAVLINK_SYS_STATUS]
  *
  * @param byte:		Current byte of the message to decode
- *	@return :		1 if success, 0 if message was not found
+ *	@retval			1 if success, 0 if message was not found
  **/
 uint8_t decode_mavlink_mssg(const unsigned char* byte, mavlink_message_t* msg)
 {
@@ -55,18 +55,14 @@ uint8_t decode_mavlink_mssg(const unsigned char* byte, mavlink_message_t* msg)
 		 {
 			case MAVLINK_MSG_ID_GLOBAL_POSITION_INT:
 				mavlink_msg_global_position_int_decode(msg, &global_position);
-				mav_alt=global_position.alt;
-				mav_lat=global_position.lat;
 				break;
 
 			case MAVLINK_MSG_ID_SYS_STATUS:
 				mavlink_msg_sys_status_decode(msg, &sys_status);
-				health = sys_status.onboard_control_sensors_health;
 				break;
 
 			case MAVLINK_MSG_ID_POWER_STATUS:
 				mavlink_msg_power_status_decode(msg, &pwr_status);
-				power = pwr_status.Vcc;
 				break;
 
 			case MAVLINK_MSG_ID_HEARTBEAT:
@@ -111,20 +107,32 @@ uint8_t decode_mavlink_mssg(const unsigned char* byte, mavlink_message_t* msg)
  *
  * @param conf_counter	Counter to keep track of attempts for sending the command
  * @param cmmd			Message struct to encode the message into
- *
- * @return 				Length of the encoded command structure
+ * @param cmd_id		Command ID
+ * @param rqst_id		Desired message ID in case the command is REQUEST_MESSAGE,
+ * 						otherwise ignored
+ * @retval 				Length of the encoded command structure, 0 if
+ * 						message was not recognised
  **/
 
-uint16_t encode_mavlink_cmd(const uint8_t* conf_counter, mavlink_message_t* cmmd)
+uint16_t encode_mavlink_cmd(const uint8_t* conf_counter, mavlink_message_t* cmmd, uint16_t cmd_id, uint16_t rqst_id)
 {
-	//EXAMPLE: send command to request message of VFR_HUD(74)
-	return	mavlink_msg_command_long_pack(SYS_ID, componentID, cmmd, TARGET_ID,
-			componentID, MAV_CMD_REQUEST_MESSAGE, *conf_counter,
-			VFR_HUD, 0, 0, 0, 0, 0, 1);				//last '1' for target address
-
-	//OR
-	//same as pack but with premade struct
-	//mavlink_msg_command_long_encode(system_id, component_id, msg, *command_long);
+	switch(cmd_id)
+	{
+		default:break;
+		case MAV_CMD_REQUEST_MESSAGE:
+			return	mavlink_msg_command_long_pack(SYS_ID, componentID, cmmd, TARGET_ID,
+				componentID, MAV_CMD_REQUEST_MESSAGE, *conf_counter,
+				rqst_id, 0, 0, 0, 0, 0, 1);
+			//last '1' is to send message only to requester
+			break;
+		case MAV_CMD_NAV_PATHPLANNING:
+			return	mavlink_msg_command_long_pack(SYS_ID, componentID, cmmd, TARGET_ID,
+							componentID, MAV_CMD_NAV_PATHPLANNING, *conf_counter,
+							2, 1, 0, 0, 0, 0, 0);
+					//TEST enable obstacle avoidance, check with SYS_STATUS
+			break;
+	}
+	return 0;
 
 }
 
@@ -132,7 +140,7 @@ uint16_t encode_mavlink_cmd(const uint8_t* conf_counter, mavlink_message_t* cmmd
 /* @brief 				This function packs a HEARTBEAT signal into the buffer
  *
  *	@param	buffer:		Empty array buffer
- * 	@return 			Length of the HEARTBEAT message in bytes
+ * 	@retval 			Length of the HEARTBEAT message in bytes
  */
 uint16_t mavlink_heartbeat(uint8_t* buffer)
 {
