@@ -61,8 +61,8 @@ Currently the [possible messages](https://mavlink.io/en/messages/common.html) ar
 
 ## [Encoding command](https://mavlink.io/en/services/command.html#MAV_CMD)
 This function takes a `mavlink_message_t` pointer and encodes a given command into the structure, ready to be sent by UART, and returns the length in bytes of this message.
-We can use `COMMAND_INT` for [position related commands](https://mavlink.io/en/messages/common.html#COMMAND_INT) that need a frame `MAV_FRAME`, or `COMMAND_LONG` for other commands.
-For a test, using the function `mavlink_msg_command_long_pack` with command ID `COMMAND_LONG` and `MAV_CMD_REQUEST_MESSAGE` as the type of command, we will request `VFR_HUD(74)` information from the quadrotor.
+We can use `COMMAND_INT(75)` for [position related commands](https://mavlink.io/en/messages/common.html#COMMAND_INT) that need a frame `MAV_FRAME`, or `COMMAND_LONG(76)` for [other commands](https://mavlink.io/en/messages/common.html#COMMAND_LONG).
+For a test, using the function `mavlink_msg_command_long_pack` with [command ID](https://mavlink.io/en/messages/common.html#mav_commands) `COMMAND_LONG` and `MAV_CMD_REQUEST_MESSAGE(512)` as the type of command, we will request `VFR_HUD(74)` information from the quadrotor.
 
 
 
