@@ -197,9 +197,9 @@ static void MX_USART6_UART_Init(void);
 			{
 				HAL_HalfDuplex_EnableReceiver(&huart2);
 
-				HAL_GPIO_TogglePin(LD1_GPIO_Port, LD1_Pin);				//DEBUG LIGHT
+				HAL_GPIO_TogglePin(LD1_GPIO_Port, LD1_Pin);			//DEBUG LIGHT
 
-				HAL_UARTEx_ReceiveToIdle_IT(&huart2, &rx_byte, 1);		//KEEP READING
+				HAL_UARTEx_ReceiveToIdle_IT(&huart2, &rx_byte, 1);	//KEEP READING
 			}
 
 	}
