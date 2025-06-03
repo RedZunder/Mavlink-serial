@@ -26,7 +26,7 @@ Now that it is connected, we use [Wireshark](https://www.wireshark.org) to captu
 - [x] HEARTBEAT protocol 
 - [x] Basic command encoding function
   - [ ] Finish encoding function
-    - [ ] Take as a parameter the ID of desired command 
+    - [x] Take as a parameter the ID of desired command 
   - [ ] Do live encoding
 
 
