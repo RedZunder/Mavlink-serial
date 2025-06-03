@@ -184,6 +184,7 @@ static void MX_USART6_UART_Init(void);
 		//RECEIVE AND PRINT TO TERMINAL
 		if(huart==&huart2)
 		{
+			HAL_GPIO_TogglePin(LD2_GPIO_Port, LD2_Pin);				//DEBUG LIGHT
 			decode_mavlink_mssg(&rx_byte, &rx_mssg);
 			HAL_UART_Transmit_IT(&huart3, &rx_byte, 1);
 		}
@@ -192,29 +193,31 @@ static void MX_USART6_UART_Init(void);
 
 	void HAL_UART_TxCpltCallback(UART_HandleTypeDef *huart)
 	{
+			if(huart==&huart2)
+			{
+				HAL_HalfDuplex_EnableReceiver(&huart2);
 
-		if(huart==&huart3)
-		{
-			HAL_GPIO_TogglePin(LD1_GPIO_Port, LD1_Pin);				//DEBUG LIGHT
-			HAL_UARTEx_ReceiveToIdle_IT(&huart2, &rx_byte, 1);		//KEEP READING
+				HAL_GPIO_TogglePin(LD1_GPIO_Port, LD1_Pin);				//DEBUG LIGHT
 
-		}
+				HAL_UARTEx_ReceiveToIdle_IT(&huart2, &rx_byte, 1);		//KEEP READING
+			}
+
 	}
 
 
 	void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
+	{
+		//send HEARTBEAT every 1Hz
+		if (htim==&htim4)
 		{
-			//send HEARTBEAT every 1Hz
-			if (htim==&htim4)
-			{
-				HAL_HalfDuplex_EnableTransmitter(&huart2);
-				len=mavlink_heartbeat(hb_buffer);
-				HAL_UART_Transmit_IT(&huart2, hb_buffer, len);
-				HAL_HalfDuplex_EnableReceiver(&huart2);
-
-			}
+			HAL_HalfDuplex_EnableTransmitter(&huart2);
+			len=mavlink_heartbeat(hb_buffer);
+			HAL_UART_Transmit_IT(&huart2, hb_buffer, len);
+			HAL_UART_Transmit_IT(&huart3, "hb", 2);
 
 		}
+
+	}
 
 
 #endif
@@ -275,30 +278,20 @@ int main(void)
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
 
-#if MODE==1
   HAL_TIM_Base_Start_IT(&htim4);
-  HAL_UART_Receive_IT(&huart6, &bt, 1);
-
-#endif
-
-
-#if MODE==2
-
-  HAL_HalfDuplex_Init(&huart2);
-  HAL_HalfDuplex_EnableReceiver(&huart2);
-  HAL_UARTEx_ReceiveToIdle_IT(&huart2, &rx_byte, 1);  	//for half-duplex mode
 
 
 
-#endif
-
-
-
+/*
 #if MODE==2
   HAL_HalfDuplex_Init(&huart2);
-  HAL_HalfDuplex_EnableReceiver(&huart2);
+  HAL_HalfDuplex_EnableTransmitter(&huart2);
+  				len=mavlink_heartbeat(hb_buffer);
+  				HAL_UART_Transmit_IT(&huart2, hb_buffer, len);
+  				HAL_UART_Transmit_IT(&huart3, hb_buffer, len);
+  				HAL_HalfDuplex_EnableReceiver(&huart2);
   HAL_UARTEx_ReceiveToIdle_IT(&huart2, &rx_byte, 1);
-#endif
+#endif*/
 
   while (1)
   {
@@ -320,6 +313,7 @@ int main(void)
 			HAL_UART_Transmit_IT(&huart2, cmd_buffer, cmd_len);
 		}
 		#endif
+
 
 
 		HAL_Delay(10);
@@ -539,7 +533,7 @@ static void MX_USART2_UART_Init(void)
 
   /* USER CODE END USART2_Init 1 */
   huart2.Instance = USART2;
-  huart2.Init.BaudRate = 9600;
+  huart2.Init.BaudRate = 115200;
   huart2.Init.WordLength = UART_WORDLENGTH_8B;
   huart2.Init.StopBits = UART_STOPBITS_1;
   huart2.Init.Parity = UART_PARITY_NONE;
@@ -574,7 +568,7 @@ static void MX_USART3_UART_Init(void)
 
   /* USER CODE END USART3_Init 1 */
   huart3.Instance = USART3;
-  huart3.Init.BaudRate = 9600;
+  huart3.Init.BaudRate = 115200;
   huart3.Init.WordLength = UART_WORDLENGTH_8B;
   huart3.Init.StopBits = UART_STOPBITS_1;
   huart3.Init.Parity = UART_PARITY_NONE;
