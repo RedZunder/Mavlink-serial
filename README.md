@@ -17,7 +17,7 @@ Then we connect the drone's communication module to the router, and we configure
 Now, if we launch [Mission Planner](https://ardupilot.org/planner/docs/mission-planner-overview.html) the program will automatically recognize the drone in the same network and connect to it. 
 Now that it is connected, we use [Wireshark](https://www.wireshark.org) to capture Mavlink packages and save them for later use during testing.
 
-
+We can now connect the TX module to the STM32 board via half-duplex UART. The UART2 is configured with internal pull-up for the pin, with a baud rate of 115200.
 
 - [x] Basic decoding function
   - [x] `decode_mavlink_mssg` decodes [messages of type Mavlink](https://mavlink.io/en/messages/common.html)</details>
