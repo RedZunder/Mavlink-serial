@@ -25,9 +25,8 @@ We can now connect the TX module to the STM32 board via half-duplex UART. The UA
   - [x] Fix live decoding (Half-duplex)
 - [x] HEARTBEAT protocol 
 - [x] Basic command encoding function
-  - [ ] Finish encoding function
+  - [x] Finish encoding function
     - [x] Take as a parameter the ID of desired command 
-  - [ ] Do live encoding
 
 
 
